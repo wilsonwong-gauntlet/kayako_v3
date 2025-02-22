@@ -151,10 +151,14 @@ class KBSearchEngine:
             Concise summary focused on relevant information
         """
         logger.info(f"[RAG] Generating summary for article: {article.title}")
-        system_prompt = """You are a helpful customer service AI that creates concise, relevant summaries of knowledge base articles.
-Focus on the information that is most relevant to the user's query.
-Keep the summary clear and suitable for voice responses (2-3 sentences).
-Include any specific steps or requirements if they are relevant."""
+        
+        # Truncate content to first 2000 characters to avoid token limits
+        truncated_content = article.content[:2000] + ("..." if len(article.content) > 2000 else "")
+        
+        system_prompt = """You are a helpful customer service AI that creates extremely concise summaries of knowledge base articles.
+Focus ONLY on the information that is most relevant to the user's query.
+Keep the summary VERY brief and suitable for voice responses (1-2 short sentences maximum).
+If steps are needed, mention only the first crucial step and direct them to the interface for full steps."""
 
         messages = [
             {"role": "system", "content": system_prompt},
@@ -163,9 +167,9 @@ Include any specific steps or requirements if they are relevant."""
 Article Title: {article.title}
 
 Article Content:
-{article.content}
+{truncated_content}
 
-Create a concise, relevant summary focusing on answering the query."""}
+Create an extremely concise summary (1-2 sentences) focusing on answering the query."""}
         ]
         
         try:
@@ -174,7 +178,7 @@ Create a concise, relevant summary focusing on answering the query."""}
                 model="gpt-4-turbo-preview",
                 messages=messages,
                 temperature=0.7,
-                max_tokens=150  # Keep summaries concise
+                max_tokens=100  # Even more concise summaries
             )
             summary = response.choices[0].message.content
             logger.info(f"[RAG] Generated summary: {summary}")
