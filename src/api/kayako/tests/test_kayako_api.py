@@ -1,8 +1,8 @@
 import asyncio
 import os
 from dotenv import load_dotenv
-from src.kayako_client import KayakoAPIClient
-from src.interfaces import Article, Ticket
+from src.api.kayako.client import KayakoAPIClient
+from src.api.kayako.interfaces import Article, Ticket
 
 async def test_kayako_api():
     # Load environment variables

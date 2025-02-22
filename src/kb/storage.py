@@ -26,6 +26,7 @@ class EmbeddingStorage:
             dsn: PostgreSQL connection string. If None, uses DATABASE_URL env var.
         """
         self.dsn = dsn or os.getenv('DATABASE_URL')
+        print(f"[DEBUG] Using database URL: {self.dsn}")  # Add debug print
         logger.debug(f"Using DSN: {self.dsn}")
         self.pool: Optional[Pool] = None
         
@@ -58,6 +59,10 @@ class EmbeddingStorage:
                     USING ivfflat (embedding vector_cosine_ops)
                 ''')
                 
+                # Log the number of articles
+                count = await conn.fetchval('SELECT COUNT(*) FROM article_embeddings')
+                logger.info(f"Database initialized with {count} articles")
+            
             logger.info("Initialized embedding storage with PostgreSQL + pgvector")
             
         except Exception as e:
@@ -266,3 +271,17 @@ class EmbeddingStorage:
         except Exception as e:
             logger.error(f"Error getting metadata for article {article_id}: {str(e)}")
             return None 
+    
+    async def get_article_count(self) -> int:
+        """Get the total number of articles in storage."""
+        if not self.pool:
+            raise RuntimeError("Database connection not initialized")
+            
+        try:
+            async with self.pool.acquire() as conn:
+                count = await conn.fetchval('SELECT COUNT(*) FROM article_embeddings')
+                logger.info(f"Total articles in storage: {count}")
+                return count
+        except Exception as e:
+            logger.error(f"Error getting article count: {str(e)}")
+            return 0 

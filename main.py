@@ -11,6 +11,7 @@ from dotenv import load_dotenv
 from src.api.kayako.client import KayakoAPIClient
 from src.api.kayako.interfaces import Ticket
 from datetime import datetime
+from src.kb.search import KBSearchEngine
 
 load_dotenv()
 
@@ -18,9 +19,11 @@ load_dotenv()
 OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
 PORT = int(os.getenv('PORT', 5050))
 SYSTEM_MESSAGE = (
-    "You are a helpful and bubbly AI assistant who loves to chat about "
-    "anything the user is interested in and is prepared to offer them facts. "
-    "You have a penchant for dad jokes, owl jokes, and rickrolling – subtly. "
+    "You are a helpful and bubbly AI assistant who specializes in providing information about AdvocateHub, "
+    "a customer support and community platform. For ANY questions about AdvocateHub features, administration, "
+    "or configuration, you MUST use the search_knowledge_base function to find accurate information. "
+    "Do not make up information about AdvocateHub - if you don't find relevant information in the knowledge base, "
+    "say so. You have a penchant for dad jokes, owl jokes, and rickrolling – subtly. "
     "Always stay positive, but work in a joke when appropriate."
 )
 VOICE = 'alloy'
@@ -32,6 +35,26 @@ LOG_EVENT_TYPES = [
 ]
 SHOW_TIMING_MATH = False
 
+# Define tools configuration
+TOOLS = [
+    {
+        "type": "function",
+        "name": "search_knowledge_base",
+        "description": "Query a knowledge base to retrieve relevant info on a topic.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "query": {
+                    "type": "string",
+                    "description": "The user question or search query about AdvocateHub."
+                }
+            },
+            "required": ["query"]
+        }
+    }
+]
+
+
 app = FastAPI()
 
 # Initialize Kayako client
@@ -40,6 +63,9 @@ kayako_client = KayakoAPIClient(
     email=os.getenv('KAYAKO_EMAIL'),
     password=os.getenv('KAYAKO_PASSWORD')
 )
+
+# Initialize KB search engine
+kb_search_engine = KBSearchEngine()
 
 if not OPENAI_API_KEY:
     raise ValueError('Missing the OpenAI API key. Please set it in the .env file.')
@@ -308,6 +334,41 @@ async def handle_media_stream(websocket: WebSocket):
                         if last_assistant_item:
                             print(f"Interrupting response with id: {last_assistant_item}")
                             await handle_speech_started_event()
+
+                    # Handle function calls
+                    if response.get('type') == 'response.done':
+                        if 'response' in response and 'output' in response['response']:
+                            print("Checking for function calls in response output...")
+                            for output_item in response['response']['output']:
+                                if output_item.get('type') == 'function_call':
+                                    print(f"Function call detected: {output_item.get('name')}")
+                                    
+                                    # Handle search_knowledge_base function
+                                    if output_item['name'] == 'search_knowledge_base':
+                                        # Initialize KB search if not done yet
+                                        if not kb_search_engine.initialized:
+                                            print("Initializing KB search engine...")
+                                            await kb_search_engine.initialize()
+                                        
+                                        # Parse arguments and search
+                                        arguments = json.loads(output_item['arguments'])
+                                        print("Searching knowledge base...")
+                                        summary = await kb_search_engine.search_and_summarize(arguments["query"])
+                                        print(f"Search result: {summary}")
+                                        
+                                        # Create function output item
+                                        function_output = {
+                                            "type": "conversation.item.create",
+                                            "item": {
+                                                "type": "function_call_output",
+                                                "call_id": output_item['call_id'],
+                                                "output": json.dumps({"result": summary if summary else "No relevant information found in the AdvocateHub knowledge base."})
+                                            }
+                                        }
+                                        await openai_ws.send(json.dumps(function_output))
+                                        
+                                        # Generate a new response
+                                        await openai_ws.send(json.dumps({"type": "response.create"}))
             except Exception as e:
                 print(f"Error in send_to_twilio: {e}")
 
@@ -351,6 +412,47 @@ async def handle_media_stream(websocket: WebSocket):
                 await connection.send_json(mark_event)
                 mark_queue.append('responsePart')
 
+        async def handle_function_call(openai_ws, function_name: str, arguments: dict, call_id: str):
+            """Handle function calls from the model."""
+            try:
+                print(f"Handling function call: {function_name} with arguments: {arguments}")
+                if function_name == "search_knowledge_base":
+                    # Initialize KB search if not done yet
+                    if not kb_search_engine.initialized:
+                        print("Initializing KB search engine...")
+                        await kb_search_engine.initialize()
+                    
+                    print("Searching knowledge base...")
+                    # Search and get summary
+                    summary = await kb_search_engine.search_and_summarize(arguments["query"])
+                    print(f"Search result: {summary}")
+                    
+                    # Create response for the model
+                    function_output = {
+                        "type": "conversation.item.create",
+                        "item": {
+                            "type": "function_call_output",
+                            "call_id": call_id,
+                            "output": json.dumps({"result": summary if summary else "No relevant information found in the AdvocateHub knowledge base."})
+                        }
+                    }
+                    await openai_ws.send(json.dumps(function_output))
+                    
+                    # Generate a new response
+                    await openai_ws.send(json.dumps({"type": "response.create"}))
+            except Exception as e:
+                print(f"Error handling function call: {e}")
+                error_output = {
+                    "type": "conversation.item.create",
+                    "item": {
+                        "type": "function_call_output",
+                        "call_id": call_id,
+                        "output": json.dumps({"error": f"Error searching AdvocateHub knowledge base: {str(e)}"})
+                    }
+                }
+                await openai_ws.send(json.dumps(error_output))
+                await openai_ws.send(json.dumps({"type": "response.create"}))
+
         await asyncio.gather(receive_from_twilio(), send_to_twilio())
 
 async def send_initial_conversation_item(openai_ws):
@@ -387,6 +489,8 @@ async def initialize_session(openai_ws):
             "instructions": SYSTEM_MESSAGE,
             "modalities": ["text", "audio"],
             "temperature": 0.8,
+            "tools": TOOLS,
+            "tool_choice": "auto"
         }
     }
     print('Sending session update:', json.dumps(session_update))
