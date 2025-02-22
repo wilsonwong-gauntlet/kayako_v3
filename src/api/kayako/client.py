@@ -3,7 +3,7 @@ from typing import List, Optional, Dict, Any
 import aiohttp
 from tenacity import retry, stop_after_attempt, wait_exponential
 from cachetools import TTLCache
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import base64
 from pydantic import BaseModel
 import json
@@ -11,6 +11,7 @@ import logging
 import re
 
 from .interfaces import Article, Ticket, User, Message, KayakoAPI
+from .ticket_classifier import TicketClassifier
 
 logger = logging.getLogger(__name__)
 
@@ -151,7 +152,7 @@ class KayakoAPIClient(KayakoAPI):
                 url = f"{self.base_url}/articles.json"
                 params = await self._get_session_params()
                 params['include'] = 'contents,titles,tags,section'
-                params['status'] = 'published'  # Use status=published instead of filter
+                params['filter'] = 'PUBLISHED'  # Only get published articles
                 params['per_page'] = per_page
                 params['offset'] = offset
                 
@@ -159,7 +160,7 @@ class KayakoAPIClient(KayakoAPI):
                 if query:
                     params['q'] = query
                 
-                logger.info(f"Fetching published articles from: {url} with offset {offset}")
+                logger.info(f"Fetching articles from: {url} with offset {offset}")
                 logger.debug(f"Headers: {headers}")
                 logger.debug(f"Params: {params}")
                 
@@ -180,10 +181,6 @@ class KayakoAPIClient(KayakoAPI):
                             
                         for item in page_items:
                             try:
-                                # Double check the status is published
-                                if item.get('status', '').lower() != 'published':
-                                    continue
-                                    
                                 article = await self.get_article(str(item.get('id', '')))
                                 if article:
                                     articles.append(article)
@@ -217,30 +214,91 @@ class KayakoAPIClient(KayakoAPI):
             self.search_cache[cache_key] = final_articles
             return final_articles
     
+    def _format_ticket_content(self, content: str, classification: Optional[Dict] = None) -> str:
+        """Format ticket content to ensure proper HTML structure and include classification details."""
+        # Create classification summary if available
+        classification_html = ""
+        if classification:
+            classification_html = f"""
+            <div style="background-color: #f5f5f5; padding: 15px; margin-bottom: 20px; border-left: 5px solid #2962FF;">
+                <h3 style="margin-top: 0;">Ticket Classification Details</h3>
+                <p><strong>Priority:</strong> {classification['priority']['name']} (ID: {classification['priority']['id']})<br>
+                   <strong>Priority Confidence:</strong> {classification['priority']['confidence']:.2f}</p>
+                <p><strong>Type:</strong> {classification['type']['name']} (ID: {classification['type']['id']})<br>
+                   <strong>Type Confidence:</strong> {classification['type']['confidence']:.2f}</p>
+                <p><strong>Matched Priority Patterns:</strong> {', '.join(classification.get('priority', {}).get('matched_patterns', []))}</p>
+                <p><strong>Matched Type Patterns:</strong> {', '.join(classification.get('type', {}).get('matched_patterns', []))}</p>
+            </div>
+            """
+
+        # Ensure content has proper HTML structure
+        if not content.strip().startswith('<!DOCTYPE html>'):
+            content = f"""<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        .transcript {{ padding: 10px; }}
+        .message {{ margin-bottom: 15px; }}
+        .user {{ color: #424242; }}
+        .assistant {{ color: #2962FF; }}
+        hr {{ border: 1px solid #eee; }}
+    </style>
+</head>
+<body>
+{classification_html}
+{content}
+</body>
+</html>"""
+        
+        return content
+    
     @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10))
     async def create_ticket(self, ticket: Ticket) -> str:
         """Create a new support ticket with retry logic."""
         async with aiohttp.ClientSession() as session:
             headers = await self._get_headers()
             
+            # Always classify ticket based on content
+            classifier = TicketClassifier()
+            classification = classifier.get_classification(ticket.contents)
+            
+            # Set priority and type from classification
+            ticket.priority_id = classification['priority']['id']
+            ticket.type_id = classification['type']['id']
+            
+            # Format the content with proper HTML structure and include classification
+            formatted_content = self._format_ticket_content(ticket.contents, classification)
+            
             # Prepare the ticket data according to Kayako's API format
             ticket_data = {
                 'subject': ticket.subject,
-                'contents': ticket.contents,
-                'channel': 'MAIL',  # Match the curl example exactly
-                'channel_id': 1,  # Match the curl example exactly
-                'type_id': ticket.type_id or 1,  # Default to 1 if not set
-                'priority_id': ticket.priority_id or 3,  # Default to 3 if not set
-                'requester_id': ticket.requester_id,  # This should be set by now
+                'contents': formatted_content,
+                'channel': ticket.channel,
+                'channel_id': ticket.channel_id,
+                'type_id': ticket.type_id,
+                'priority_id': ticket.priority_id,
+                'requester_id': ticket.requester_id,
                 'channel_options': {
-                    'html': True  # Allow HTML formatting in the contents
+                    'html': True  # Enable HTML formatting
                 }
             }
             
+            # Add tags if provided
+            if ticket.tags:
+                ticket_data['tags'] = ticket.tags
+                
+            # Add CC if provided in channel options
+            if ticket.channel_options and 'cc' in ticket.channel_options:
+                ticket_data['channel_options']['cc'] = ticket.channel_options['cc']
+            
             url = f"{self.base_url}/cases"
-            logger.info(f"Creating ticket at URL: {url}")
-            logger.info(f"Headers: {headers}")
-            logger.info(f"Ticket data: {ticket_data}")
+            logger.info(f"\n=== Sending Ticket to API ===")
+            logger.info(f"URL: {url}")
+            logger.info(f"Priority ID being sent: {ticket_data['priority_id']}")
+            logger.info(f"Type ID being sent: {ticket_data['type_id']}")
+            logger.debug(f"Headers: {headers}")
+            logger.debug(f"Full ticket data: {json.dumps(ticket_data, indent=2)}")
             
             try:
                 async with session.post(
@@ -248,22 +306,31 @@ class KayakoAPIClient(KayakoAPI):
                     headers=headers,
                     json=ticket_data
                 ) as response:
-                    logger.info(f"Response status: {response.status}")
                     response_text = await response.text()
-                    logger.info(f"Response body: {response_text}")
+                    logger.info(f"Response status: {response.status}")
+                    logger.debug(f"Response body: {response_text}")
                     
                     response.raise_for_status()
                     data = await response.json()
-                    # Access the ID from the nested data structure
+                    
+                    # Log successful ticket creation with classification details
+                    logger.info(
+                        f"Successfully created ticket {data['data']['id']} "
+                        f"with priority {ticket.priority_id} ({classification['priority']['name']}) "
+                        f"and type {ticket.type_id} ({classification['type']['name']})"
+                    )
+                    
                     return str(data['data']['id'])
+                    
             except aiohttp.ClientResponseError as e:
                 logger.error(f"API error creating ticket: {e.status} - {e.message}")
                 logger.error(f"Request URL: {url}")
                 logger.error(f"Request headers: {headers}")
-                logger.error(f"Request data: {ticket_data}")
+                logger.error(f"Request data: {json.dumps(ticket_data, indent=2)}")
                 raise
             except Exception as e:
                 logger.error(f"Unexpected error creating ticket: {str(e)}")
+                logger.error(f"Full ticket data: {json.dumps(ticket_data, indent=2)}")
                 raise
     
     @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10))

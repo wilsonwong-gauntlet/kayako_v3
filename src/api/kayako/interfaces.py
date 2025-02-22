@@ -1,28 +1,28 @@
-from typing import List, Optional, Dict, Any
-from pydantic import BaseModel, EmailStr
+from typing import List, Optional, Dict
+from pydantic import BaseModel, EmailStr, Field
 from datetime import datetime
 from dataclasses import dataclass, field
 from abc import ABC, abstractmethod
 
 class User(BaseModel):
-    """Kayako user model."""
-    id: int
+    """Represents a Kayako user."""
+    id: str
     email: str
     full_name: str
     phone: Optional[str] = None
-    organization: Optional[int] = None
-    role: int = 4
-    locale: int = 2
-    time_zone: Optional[str] = None
+    organization: Optional[str] = None
+    role: str = "customer"
+    locale: str = "en-US"
+    time_zone: str = "UTC"
 
 class Message(BaseModel):
-    """Kayako message model."""
+    """Represents a conversation message."""
     id: str
     conversation_id: str
     content: str
-    type: str  # 'reply' or 'note'
-    creator: Optional[Dict[str, Any]] = None
-    attachments: List[Dict[str, Any]] = []
+    type: str
+    creator: Optional[Dict] = None
+    attachments: List[Dict] = []
     created_at: datetime
     updated_at: Optional[datetime] = None
     is_private: bool = False
@@ -37,7 +37,7 @@ class Article:
     category: str = "General"
 
     @classmethod
-    def from_api_response(cls, item: Dict[str, Any]) -> 'Article':
+    def from_api_response(cls, item: Dict[str, any]) -> 'Article':
         """Create an Article instance from an API response."""
         # Extract article ID
         article_id = str(item.get('data', {}).get('id', item.get('id', '')))
@@ -70,23 +70,27 @@ class Article:
         )
 
 class Ticket(BaseModel):
-    """Support ticket."""
-    id: Optional[str] = None
+    """Represents a support ticket."""
     subject: str
-    contents: str  # Changed from description to match API
-    channel: str = "MAIL"  # Match the curl example exactly
-    channel_id: int = 1  # Match the curl example exactly
-    type_id: int = 1  # Default type ID
-    priority_id: int = 3  # Match the curl example exactly
-    requester_id: Optional[int] = None  # This must be set before creating ticket
-    status: Optional[str] = None  # Make status optional since it's redundant
+    contents: str
+    requester_id: int
+    priority_id: Optional[int] = None  # Make truly optional
+    type_id: Optional[int] = None      # Make truly optional
+    tags: Optional[List[str]] = None
+    channel: str = "MAIL"
+    channel_id: int = 1
+    channel_options: Dict = Field(default_factory=lambda: {"html": True})
+    
+    class Config:
+        """Pydantic model configuration."""
+        arbitrary_types_allowed = True
 
 class KayakoAPI(ABC):
-    """Interface for Kayako API client."""
+    """Abstract base class for Kayako API client."""
 
     @abstractmethod
-    async def search_articles(self, query: str) -> list[Article]:
-        """Search for articles in Kayako."""
+    async def search_articles(self, query: str = '', limit: Optional[int] = None) -> List[Article]:
+        """Search knowledge base articles."""
         pass
     
     async def create_ticket(self, ticket: Ticket) -> str:
@@ -94,8 +98,8 @@ class KayakoAPI(ABC):
         # TODO: Implement real API call or mock data
         pass
     
-    async def get_article(self, article_id: str) -> Article:
-        """Get a specific article by ID."""
+    async def get_article(self, article_id: str) -> Optional[Article]:
+        """Get a single article by ID."""
         # TODO: Implement real API call or mock data
         pass
 

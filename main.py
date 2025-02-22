@@ -240,7 +240,6 @@ async def handle_media_stream(websocket: WebSocket):
                             contents=ticket_content,
                             channel='MAIL',
                             channel_id=1,
-                            priority_id=3,
                             requester_id=309  # Using a default requester ID
                         )
                         try:
