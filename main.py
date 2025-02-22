@@ -88,17 +88,61 @@ async def handle_media_stream(websocket: WebSocket):
                 print(f"Added assistant message to transcript. Total messages: {len(self.transcript)}")
         
         def get_formatted_transcript(self):
+            # Prepare ticket content with metadata
             lines = []
+            
+            # Add metadata header with HTML formatting
+            call_duration = (datetime.now() - self.call_start_time).total_seconds()
+            lines.extend([
+                "<h2>Call Information</h2>",
+                "<hr/>",
+                f"<p><strong>Duration:</strong> {call_duration:.2f} seconds</p>",
+                f"<p><strong>Start Time:</strong> {self.call_start_time}</p>",
+                f"<p><strong>End Time:</strong> {datetime.now()}</p>",
+                f"<p><strong>Total Messages:</strong> {len(self.transcript)}</p>",
+                "",
+                "<h2>Conversation Transcript</h2>",
+                "<hr/>",
+                "<div class='transcript'>"
+            ])
+            
+            # Add conversation messages with HTML formatting
             for msg in self.transcript:
                 timestamp = msg["timestamp"].strftime("%Y-%m-%d %H:%M:%S")
-                lines.append(f"[{timestamp}] {msg['role'].title()}: {msg['content']}")
+                role_style = "color: #2962FF" if msg["role"] == "assistant" else "color: #424242"
+                lines.append(
+                    f"<p style='{role_style}'>"
+                    f"<strong>[{timestamp}] {msg['role'].title()}:</strong><br/>"
+                    f"{msg['content']}"
+                    f"</p>"
+                )
+            
+            lines.append("</div>")  # Close transcript div
+            
             print(f"Generating transcript with {len(self.transcript)} messages")
             return "\n".join(lines)
 
         def debug_print_transcript(self):
+            """For console output, use plain text formatting"""
             print("\n=== Current Transcript State ===")
             print(f"Total messages: {len(self.transcript)}")
-            print(self.get_formatted_transcript())
+            
+            # Print metadata
+            call_duration = (datetime.now() - self.call_start_time).total_seconds()
+            print("\nCall Information")
+            print("================")
+            print(f"Duration: {call_duration:.2f} seconds")
+            print(f"Start Time: {self.call_start_time}")
+            print(f"End Time: {datetime.now()}")
+            print(f"Total Messages: {len(self.transcript)}")
+            
+            # Print messages
+            print("\nConversation Transcript")
+            print("=====================\n")
+            for msg in self.transcript:
+                timestamp = msg["timestamp"].strftime("%Y-%m-%d %H:%M:%S")
+                print(f"[{timestamp}] {msg['role'].title()}: {msg['content']}\n")
+            
             print("===============================\n")
 
     conversation = ConversationState()
@@ -160,9 +204,9 @@ async def handle_media_stream(websocket: WebSocket):
                             f"Call End Time: {datetime.now()}\n"
                             f"Stream SID: {stream_sid}\n"
                             f"Total Messages: {len(conversation.transcript)}\n\n"
-                            f"Conversation Transcript:\n"
-                            f"==================\n\n"
-                            f"{transcript_text}"
+                            f"Conversation Transcript\n"
+                            f"====================\n\n"
+                            f"{transcript_text}\n"  # Add newline after transcript
                         )
                         
                         ticket = Ticket(
