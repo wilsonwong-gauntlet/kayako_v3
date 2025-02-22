@@ -127,11 +127,11 @@ class KayakoAPIClient(KayakoAPI):
     @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10))
     async def search_articles(self, query: str = '', limit: Optional[int] = None) -> List[Article]:
         """
-        Get articles from the knowledge base.
+        Get all published articles from the knowledge base.
         
         Args:
             query: Search query string
-            limit: Maximum number of articles to return
+            limit: Maximum number of articles to return (if None, returns all articles)
             
         Returns:
             List of Article objects
@@ -141,56 +141,81 @@ class KayakoAPIClient(KayakoAPI):
         if cache_key in self.search_cache:
             return self.search_cache[cache_key]
         
+        articles = []
+        offset = 0
+        per_page = 10  # API default page size
+        
         async with aiohttp.ClientSession() as session:
-            headers = await self._get_headers()
-            url = f"{self.base_url}/articles.json"
-            params = await self._get_session_params()
-            params['include'] = 'contents,titles,tags,section'
+            while True:  # Keep fetching until no more pages
+                headers = await self._get_headers()
+                url = f"{self.base_url}/articles.json"
+                params = await self._get_session_params()
+                params['include'] = 'contents,titles,tags,section'
+                params['status'] = 'published'  # Use status=published instead of filter
+                params['per_page'] = per_page
+                params['offset'] = offset
+                
+                # Add search query if provided
+                if query:
+                    params['q'] = query
+                
+                logger.info(f"Fetching published articles from: {url} with offset {offset}")
+                logger.debug(f"Headers: {headers}")
+                logger.debug(f"Params: {params}")
+                
+                try:
+                    async with session.get(
+                        url,
+                        headers=headers,
+                        params=params
+                    ) as response:
+                        response.raise_for_status()
+                        data = await response.json()
+                        logger.debug(f"Raw API Response: {data}")
+                        
+                        # Process articles from current page
+                        page_items = data.get('data', [])
+                        if not page_items:
+                            break  # No more articles to fetch
+                            
+                        for item in page_items:
+                            try:
+                                # Double check the status is published
+                                if item.get('status', '').lower() != 'published':
+                                    continue
+                                    
+                                article = await self.get_article(str(item.get('id', '')))
+                                if article:
+                                    articles.append(article)
+                                    # If limit is specified and reached, break
+                                    if limit and len(articles) >= limit:
+                                        break
+                            except Exception as e:
+                                logger.error(f"Error processing article: {str(e)}")
+                                continue
+                        
+                        # If limit is specified and reached, break outer loop
+                        if limit and len(articles) >= limit:
+                            break
+                            
+                        # Check if we have more pages
+                        if 'next_url' not in data:
+                            break
+                            
+                        # Update offset for next page
+                        offset += per_page
+                        
+                except aiohttp.ClientResponseError as e:
+                    logger.error(f"Articles API error: {e.status} - {e.message}")
+                    break
+                except Exception as e:
+                    logger.error(f"Unexpected error fetching articles: {str(e)}")
+                    break
             
-            # Add search query if provided
-            if query:
-                params['q'] = query
-            
-            # Add limit if provided
-            if limit is not None:
-                params['per_page'] = limit
-            
-            logger.info(f"Fetching articles from: {url}")
-            logger.debug(f"Headers: {headers}")
-            logger.debug(f"Params: {params}")
-            
-            try:
-                async with session.get(
-                    url,
-                    headers=headers,
-                    params=params
-                ) as response:
-                    response.raise_for_status()
-                    data = await response.json()
-                    logger.debug(f"Raw API Response: {data}")
-                    
-                    articles = []
-                    for item in data.get('data', []):
-                        try:
-                            article = await self.get_article(str(item.get('id', '')))
-                            if article:
-                                articles.append(article)
-                                if limit and len(articles) >= limit:
-                                    break
-                        except Exception as e:
-                            logger.error(f"Error processing article: {str(e)}")
-                            continue
-                    
-                    # Cache the results
-                    self.search_cache[cache_key] = articles
-                    return articles
-                    
-            except aiohttp.ClientResponseError as e:
-                logger.error(f"Articles API error: {e.status} - {e.message}")
-                return []
-            except Exception as e:
-                logger.error(f"Unexpected error fetching articles: {str(e)}")
-                return []
+            # Cache the results
+            final_articles = articles[:limit] if limit else articles
+            self.search_cache[cache_key] = final_articles
+            return final_articles
     
     @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10))
     async def create_ticket(self, ticket: Ticket) -> str:

@@ -10,7 +10,7 @@ from dotenv import load_dotenv
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from src.kb.search import KBSearchEngine
-from src.kb.kayako_client import KayakoAPIClient
+from src.api.kayako.client import KayakoAPIClient
 from src.kb.storage import EmbeddingStorage
 
 # Configure logging
