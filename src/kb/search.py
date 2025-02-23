@@ -4,6 +4,7 @@ import os
 from typing import List, Optional, Dict, Tuple
 import numpy as np
 from openai import AsyncOpenAI
+import httpx
 from dotenv import load_dotenv
 import json
 import logging
@@ -14,8 +15,15 @@ from .storage import EmbeddingStorage
 # Load environment variables
 load_dotenv()
 
-# Initialize OpenAI client
-client = AsyncOpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+# Initialize OpenAI client with specific httpx client configuration
+timeout = httpx.Timeout(30.0)
+limits = httpx.Limits(max_keepalive_connections=5, max_connections=10)
+http_client = httpx.AsyncClient(
+    timeout=timeout,
+    follow_redirects=True,
+    limits=limits
+)
+client = AsyncOpenAI(http_client=http_client)
 
 # Configure logging
 logger = logging.getLogger(__name__)

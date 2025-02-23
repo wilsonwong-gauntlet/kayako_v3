@@ -1,0 +1,537 @@
+[
+  {
+    "role": "user",
+    "start_time": "2025-02-23T10:05:16.241519",
+    "filename": "call_recordings/MZd4d830af4ec976605d2e22318afe0163/user_10_05_16.raw"
+  },
+  {
+    "role": "assistant",
+    "start_time": "2025-02-23T10:05:18.775050",
+    "filename": "call_recordings/MZd4d830af4ec976605d2e22318afe0163/assistant_10_05_18.raw"
+  },
+  {
+    "role": "user",
+    "start_time": "2025-02-23T10:05:18.790010",
+    "filename": "call_recordings/MZd4d830af4ec976605d2e22318afe0163/user_10_05_18.raw"
+  },
+  {
+    "role": "assistant",
+    "start_time": "2025-02-23T10:05:18.832500",
+    "filename": "call_recordings/MZd4d830af4ec976605d2e22318afe0163/assistant_10_05_18.raw"
+  },
+  {
+    "role": "user",
+    "start_time": "2025-02-23T10:05:18.847088",
+    "filename": "call_recordings/MZd4d830af4ec976605d2e22318afe0163/user_10_05_18.raw"
+  },
+  {
+    "role": "assistant",
+    "start_time": "2025-02-23T10:05:18.862767",
+    "filename": "call_recordings/MZd4d830af4ec976605d2e22318afe0163/assistant_10_05_18.raw"
+  },
+  {
+    "role": "user",
+    "start_time": "2025-02-23T10:05:18.865946",
+    "filename": "call_recordings/MZd4d830af4ec976605d2e22318afe0163/user_10_05_18.raw"
+  },
+  {
+    "role": "assistant",
+    "start_time": "2025-02-23T10:05:18.893099",
+    "filename": "call_recordings/MZd4d830af4ec976605d2e22318afe0163/assistant_10_05_18.raw"
+  },
+  {
+    "role": "user",
+    "start_time": "2025-02-23T10:05:18.908070",
+    "filename": "call_recordings/MZd4d830af4ec976605d2e22318afe0163/user_10_05_18.raw"
+  },
+  {
+    "role": "assistant",
+    "start_time": "2025-02-23T10:05:19.018434",
+    "filename": "call_recordings/MZd4d830af4ec976605d2e22318afe0163/assistant_10_05_19.raw"
+  },
+  {
+    "role": "user",
+    "start_time": "2025-02-23T10:05:19.026340",
+    "filename": "call_recordings/MZd4d830af4ec976605d2e22318afe0163/user_10_05_19.raw"
+  },
+  {
+    "role": "assistant",
+    "start_time": "2025-02-23T10:05:19.091700",
+    "filename": "call_recordings/MZd4d830af4ec976605d2e22318afe0163/assistant_10_05_19.raw"
+  },
+  {
+    "role": "user",
+    "start_time": "2025-02-23T10:05:19.106961",
+    "filename": "call_recordings/MZd4d830af4ec976605d2e22318afe0163/user_10_05_19.raw"
+  },
+  {
+    "role": "assistant",
+    "start_time": "2025-02-23T10:05:19.269840",
+    "filename": "call_recordings/MZd4d830af4ec976605d2e22318afe0163/assistant_10_05_19.raw"
+  },
+  {
+    "role": "user",
+    "start_time": "2025-02-23T10:05:19.288064",
+    "filename": "call_recordings/MZd4d830af4ec976605d2e22318afe0163/user_10_05_19.raw"
+  },
+  {
+    "role": "assistant",
+    "start_time": "2025-02-23T10:05:19.432256",
+    "filename": "call_recordings/MZd4d830af4ec976605d2e22318afe0163/assistant_10_05_19.raw"
+  },
+  {
+    "role": "user",
+    "start_time": "2025-02-23T10:05:19.434258",
+    "filename": "call_recordings/MZd4d830af4ec976605d2e22318afe0163/user_10_05_19.raw"
+  },
+  {
+    "role": "assistant",
+    "start_time": "2025-02-23T10:05:19.562200",
+    "filename": "call_recordings/MZd4d830af4ec976605d2e22318afe0163/assistant_10_05_19.raw"
+  },
+  {
+    "role": "user",
+    "start_time": "2025-02-23T10:05:19.567370",
+    "filename": "call_recordings/MZd4d830af4ec976605d2e22318afe0163/user_10_05_19.raw"
+  },
+  {
+    "role": "assistant",
+    "start_time": "2025-02-23T10:05:19.590026",
+    "filename": "call_recordings/MZd4d830af4ec976605d2e22318afe0163/assistant_10_05_19.raw"
+  },
+  {
+    "role": "user",
+    "start_time": "2025-02-23T10:05:19.606835",
+    "filename": "call_recordings/MZd4d830af4ec976605d2e22318afe0163/user_10_05_19.raw"
+  },
+  {
+    "role": "assistant",
+    "start_time": "2025-02-23T10:05:29.150349",
+    "filename": "call_recordings/MZd4d830af4ec976605d2e22318afe0163/assistant_10_05_29.raw"
+  },
+  {
+    "role": "user",
+    "start_time": "2025-02-23T10:05:29.167982",
+    "filename": "call_recordings/MZd4d830af4ec976605d2e22318afe0163/user_10_05_29.raw"
+  },
+  {
+    "role": "assistant",
+    "start_time": "2025-02-23T10:05:29.192841",
+    "filename": "call_recordings/MZd4d830af4ec976605d2e22318afe0163/assistant_10_05_29.raw"
+  },
+  {
+    "role": "user",
+    "start_time": "2025-02-23T10:05:29.208869",
+    "filename": "call_recordings/MZd4d830af4ec976605d2e22318afe0163/user_10_05_29.raw"
+  },
+  {
+    "role": "assistant",
+    "start_time": "2025-02-23T10:05:29.218329",
+    "filename": "call_recordings/MZd4d830af4ec976605d2e22318afe0163/assistant_10_05_29.raw"
+  },
+  {
+    "role": "user",
+    "start_time": "2025-02-23T10:05:29.228785",
+    "filename": "call_recordings/MZd4d830af4ec976605d2e22318afe0163/user_10_05_29.raw"
+  },
+  {
+    "role": "assistant",
+    "start_time": "2025-02-23T10:05:29.253362",
+    "filename": "call_recordings/MZd4d830af4ec976605d2e22318afe0163/assistant_10_05_29.raw"
+  },
+  {
+    "role": "user",
+    "start_time": "2025-02-23T10:05:29.267946",
+    "filename": "call_recordings/MZd4d830af4ec976605d2e22318afe0163/user_10_05_29.raw"
+  },
+  {
+    "role": "assistant",
+    "start_time": "2025-02-23T10:05:29.282334",
+    "filename": "call_recordings/MZd4d830af4ec976605d2e22318afe0163/assistant_10_05_29.raw"
+  },
+  {
+    "role": "user",
+    "start_time": "2025-02-23T10:05:29.286889",
+    "filename": "call_recordings/MZd4d830af4ec976605d2e22318afe0163/user_10_05_29.raw"
+  },
+  {
+    "role": "assistant",
+    "start_time": "2025-02-23T10:05:29.397171",
+    "filename": "call_recordings/MZd4d830af4ec976605d2e22318afe0163/assistant_10_05_29.raw"
+  },
+  {
+    "role": "user",
+    "start_time": "2025-02-23T10:05:29.407600",
+    "filename": "call_recordings/MZd4d830af4ec976605d2e22318afe0163/user_10_05_29.raw"
+  },
+  {
+    "role": "assistant",
+    "start_time": "2025-02-23T10:05:29.483617",
+    "filename": "call_recordings/MZd4d830af4ec976605d2e22318afe0163/assistant_10_05_29.raw"
+  },
+  {
+    "role": "user",
+    "start_time": "2025-02-23T10:05:29.487218",
+    "filename": "call_recordings/MZd4d830af4ec976605d2e22318afe0163/user_10_05_29.raw"
+  },
+  {
+    "role": "assistant",
+    "start_time": "2025-02-23T10:05:29.623458",
+    "filename": "call_recordings/MZd4d830af4ec976605d2e22318afe0163/assistant_10_05_29.raw"
+  },
+  {
+    "role": "user",
+    "start_time": "2025-02-23T10:05:29.626758",
+    "filename": "call_recordings/MZd4d830af4ec976605d2e22318afe0163/user_10_05_29.raw"
+  },
+  {
+    "role": "assistant",
+    "start_time": "2025-02-23T10:05:29.891314",
+    "filename": "call_recordings/MZd4d830af4ec976605d2e22318afe0163/assistant_10_05_29.raw"
+  },
+  {
+    "role": "user",
+    "start_time": "2025-02-23T10:05:29.909404",
+    "filename": "call_recordings/MZd4d830af4ec976605d2e22318afe0163/user_10_05_29.raw"
+  },
+  {
+    "role": "assistant",
+    "start_time": "2025-02-23T10:05:29.980091",
+    "filename": "call_recordings/MZd4d830af4ec976605d2e22318afe0163/assistant_10_05_29.raw"
+  },
+  {
+    "role": "user",
+    "start_time": "2025-02-23T10:05:29.989644",
+    "filename": "call_recordings/MZd4d830af4ec976605d2e22318afe0163/user_10_05_29.raw"
+  },
+  {
+    "role": "assistant",
+    "start_time": "2025-02-23T10:05:44.078039",
+    "filename": "call_recordings/MZd4d830af4ec976605d2e22318afe0163/assistant_10_05_44.raw"
+  },
+  {
+    "role": "user",
+    "start_time": "2025-02-23T10:05:44.087518",
+    "filename": "call_recordings/MZd4d830af4ec976605d2e22318afe0163/user_10_05_44.raw"
+  },
+  {
+    "role": "assistant",
+    "start_time": "2025-02-23T10:05:44.114178",
+    "filename": "call_recordings/MZd4d830af4ec976605d2e22318afe0163/assistant_10_05_44.raw"
+  },
+  {
+    "role": "user",
+    "start_time": "2025-02-23T10:05:44.128091",
+    "filename": "call_recordings/MZd4d830af4ec976605d2e22318afe0163/user_10_05_44.raw"
+  },
+  {
+    "role": "assistant",
+    "start_time": "2025-02-23T10:05:44.143617",
+    "filename": "call_recordings/MZd4d830af4ec976605d2e22318afe0163/assistant_10_05_44.raw"
+  },
+  {
+    "role": "user",
+    "start_time": "2025-02-23T10:05:44.146458",
+    "filename": "call_recordings/MZd4d830af4ec976605d2e22318afe0163/user_10_05_44.raw"
+  },
+  {
+    "role": "assistant",
+    "start_time": "2025-02-23T10:05:44.180804",
+    "filename": "call_recordings/MZd4d830af4ec976605d2e22318afe0163/assistant_10_05_44.raw"
+  },
+  {
+    "role": "user",
+    "start_time": "2025-02-23T10:05:44.186800",
+    "filename": "call_recordings/MZd4d830af4ec976605d2e22318afe0163/user_10_05_44.raw"
+  },
+  {
+    "role": "assistant",
+    "start_time": "2025-02-23T10:05:44.222300",
+    "filename": "call_recordings/MZd4d830af4ec976605d2e22318afe0163/assistant_10_05_44.raw"
+  },
+  {
+    "role": "user",
+    "start_time": "2025-02-23T10:05:44.226667",
+    "filename": "call_recordings/MZd4d830af4ec976605d2e22318afe0163/user_10_05_44.raw"
+  },
+  {
+    "role": "assistant",
+    "start_time": "2025-02-23T10:05:44.322105",
+    "filename": "call_recordings/MZd4d830af4ec976605d2e22318afe0163/assistant_10_05_44.raw"
+  },
+  {
+    "role": "user",
+    "start_time": "2025-02-23T10:05:44.328051",
+    "filename": "call_recordings/MZd4d830af4ec976605d2e22318afe0163/user_10_05_44.raw"
+  },
+  {
+    "role": "assistant",
+    "start_time": "2025-02-23T10:05:44.401341",
+    "filename": "call_recordings/MZd4d830af4ec976605d2e22318afe0163/assistant_10_05_44.raw"
+  },
+  {
+    "role": "user",
+    "start_time": "2025-02-23T10:05:44.406298",
+    "filename": "call_recordings/MZd4d830af4ec976605d2e22318afe0163/user_10_05_44.raw"
+  },
+  {
+    "role": "assistant",
+    "start_time": "2025-02-23T10:05:44.580310",
+    "filename": "call_recordings/MZd4d830af4ec976605d2e22318afe0163/assistant_10_05_44.raw"
+  },
+  {
+    "role": "user",
+    "start_time": "2025-02-23T10:05:44.590866",
+    "filename": "call_recordings/MZd4d830af4ec976605d2e22318afe0163/user_10_05_44.raw"
+  },
+  {
+    "role": "assistant",
+    "start_time": "2025-02-23T10:05:44.982868",
+    "filename": "call_recordings/MZd4d830af4ec976605d2e22318afe0163/assistant_10_05_44.raw"
+  },
+  {
+    "role": "user",
+    "start_time": "2025-02-23T10:05:44.986876",
+    "filename": "call_recordings/MZd4d830af4ec976605d2e22318afe0163/user_10_05_44.raw"
+  },
+  {
+    "role": "assistant",
+    "start_time": "2025-02-23T10:05:45.117142",
+    "filename": "call_recordings/MZd4d830af4ec976605d2e22318afe0163/assistant_10_05_45.raw"
+  },
+  {
+    "role": "user",
+    "start_time": "2025-02-23T10:05:45.119395",
+    "filename": "call_recordings/MZd4d830af4ec976605d2e22318afe0163/user_10_05_45.raw"
+  },
+  {
+    "role": "assistant",
+    "start_time": "2025-02-23T10:05:45.275632",
+    "filename": "call_recordings/MZd4d830af4ec976605d2e22318afe0163/assistant_10_05_45.raw"
+  },
+  {
+    "role": "user",
+    "start_time": "2025-02-23T10:05:45.288695",
+    "filename": "call_recordings/MZd4d830af4ec976605d2e22318afe0163/user_10_05_45.raw"
+  },
+  {
+    "role": "assistant",
+    "start_time": "2025-02-23T10:05:45.477907",
+    "filename": "call_recordings/MZd4d830af4ec976605d2e22318afe0163/assistant_10_05_45.raw"
+  },
+  {
+    "role": "user",
+    "start_time": "2025-02-23T10:05:45.490941",
+    "filename": "call_recordings/MZd4d830af4ec976605d2e22318afe0163/user_10_05_45.raw"
+  },
+  {
+    "role": "assistant",
+    "start_time": "2025-02-23T10:05:45.616444",
+    "filename": "call_recordings/MZd4d830af4ec976605d2e22318afe0163/assistant_10_05_45.raw"
+  },
+  {
+    "role": "user",
+    "start_time": "2025-02-23T10:05:45.628531",
+    "filename": "call_recordings/MZd4d830af4ec976605d2e22318afe0163/user_10_05_45.raw"
+  },
+  {
+    "role": "assistant",
+    "start_time": "2025-02-23T10:05:45.820213",
+    "filename": "call_recordings/MZd4d830af4ec976605d2e22318afe0163/assistant_10_05_45.raw"
+  },
+  {
+    "role": "user",
+    "start_time": "2025-02-23T10:05:45.825817",
+    "filename": "call_recordings/MZd4d830af4ec976605d2e22318afe0163/user_10_05_45.raw"
+  },
+  {
+    "role": "assistant",
+    "start_time": "2025-02-23T10:05:45.963980",
+    "filename": "call_recordings/MZd4d830af4ec976605d2e22318afe0163/assistant_10_05_45.raw"
+  },
+  {
+    "role": "user",
+    "start_time": "2025-02-23T10:05:45.966327",
+    "filename": "call_recordings/MZd4d830af4ec976605d2e22318afe0163/user_10_05_45.raw"
+  },
+  {
+    "role": "assistant",
+    "start_time": "2025-02-23T10:05:46.143237",
+    "filename": "call_recordings/MZd4d830af4ec976605d2e22318afe0163/assistant_10_05_46.raw"
+  },
+  {
+    "role": "user",
+    "start_time": "2025-02-23T10:05:46.147459",
+    "filename": "call_recordings/MZd4d830af4ec976605d2e22318afe0163/user_10_05_46.raw"
+  },
+  {
+    "role": "assistant",
+    "start_time": "2025-02-23T10:05:46.290277",
+    "filename": "call_recordings/MZd4d830af4ec976605d2e22318afe0163/assistant_10_05_46.raw"
+  },
+  {
+    "role": "user",
+    "start_time": "2025-02-23T10:05:46.291593",
+    "filename": "call_recordings/MZd4d830af4ec976605d2e22318afe0163/user_10_05_46.raw"
+  },
+  {
+    "role": "assistant",
+    "start_time": "2025-02-23T10:05:46.522597",
+    "filename": "call_recordings/MZd4d830af4ec976605d2e22318afe0163/assistant_10_05_46.raw"
+  },
+  {
+    "role": "user",
+    "start_time": "2025-02-23T10:05:46.528684",
+    "filename": "call_recordings/MZd4d830af4ec976605d2e22318afe0163/user_10_05_46.raw"
+  },
+  {
+    "role": "assistant",
+    "start_time": "2025-02-23T10:05:46.664554",
+    "filename": "call_recordings/MZd4d830af4ec976605d2e22318afe0163/assistant_10_05_46.raw"
+  },
+  {
+    "role": "user",
+    "start_time": "2025-02-23T10:05:46.665736",
+    "filename": "call_recordings/MZd4d830af4ec976605d2e22318afe0163/user_10_05_46.raw"
+  },
+  {
+    "role": "assistant",
+    "start_time": "2025-02-23T10:05:46.804547",
+    "filename": "call_recordings/MZd4d830af4ec976605d2e22318afe0163/assistant_10_05_46.raw"
+  },
+  {
+    "role": "user",
+    "start_time": "2025-02-23T10:05:46.806865",
+    "filename": "call_recordings/MZd4d830af4ec976605d2e22318afe0163/user_10_05_46.raw"
+  },
+  {
+    "role": "assistant",
+    "start_time": "2025-02-23T10:05:46.958997",
+    "filename": "call_recordings/MZd4d830af4ec976605d2e22318afe0163/assistant_10_05_46.raw"
+  },
+  {
+    "role": "user",
+    "start_time": "2025-02-23T10:05:46.967092",
+    "filename": "call_recordings/MZd4d830af4ec976605d2e22318afe0163/user_10_05_46.raw"
+  },
+  {
+    "role": "assistant",
+    "start_time": "2025-02-23T10:05:47.031220",
+    "filename": "call_recordings/MZd4d830af4ec976605d2e22318afe0163/assistant_10_05_47.raw"
+  },
+  {
+    "role": "user",
+    "start_time": "2025-02-23T10:05:47.047131",
+    "filename": "call_recordings/MZd4d830af4ec976605d2e22318afe0163/user_10_05_47.raw"
+  },
+  {
+    "role": "assistant",
+    "start_time": "2025-02-23T10:05:52.888467",
+    "filename": "call_recordings/MZd4d830af4ec976605d2e22318afe0163/assistant_10_05_52.raw"
+  },
+  {
+    "role": "user",
+    "start_time": "2025-02-23T10:05:52.906106",
+    "filename": "call_recordings/MZd4d830af4ec976605d2e22318afe0163/user_10_05_52.raw"
+  },
+  {
+    "role": "assistant",
+    "start_time": "2025-02-23T10:05:52.933759",
+    "filename": "call_recordings/MZd4d830af4ec976605d2e22318afe0163/assistant_10_05_52.raw"
+  },
+  {
+    "role": "user",
+    "start_time": "2025-02-23T10:05:52.946304",
+    "filename": "call_recordings/MZd4d830af4ec976605d2e22318afe0163/user_10_05_52.raw"
+  },
+  {
+    "role": "assistant",
+    "start_time": "2025-02-23T10:05:52.977434",
+    "filename": "call_recordings/MZd4d830af4ec976605d2e22318afe0163/assistant_10_05_52.raw"
+  },
+  {
+    "role": "user",
+    "start_time": "2025-02-23T10:05:52.987084",
+    "filename": "call_recordings/MZd4d830af4ec976605d2e22318afe0163/user_10_05_52.raw"
+  },
+  {
+    "role": "assistant",
+    "start_time": "2025-02-23T10:05:53.012889",
+    "filename": "call_recordings/MZd4d830af4ec976605d2e22318afe0163/assistant_10_05_53.raw"
+  },
+  {
+    "role": "user",
+    "start_time": "2025-02-23T10:05:53.028546",
+    "filename": "call_recordings/MZd4d830af4ec976605d2e22318afe0163/user_10_05_53.raw"
+  },
+  {
+    "role": "assistant",
+    "start_time": "2025-02-23T10:05:53.059773",
+    "filename": "call_recordings/MZd4d830af4ec976605d2e22318afe0163/assistant_10_05_53.raw"
+  },
+  {
+    "role": "user",
+    "start_time": "2025-02-23T10:05:53.066848",
+    "filename": "call_recordings/MZd4d830af4ec976605d2e22318afe0163/user_10_05_53.raw"
+  },
+  {
+    "role": "assistant",
+    "start_time": "2025-02-23T10:05:53.173205",
+    "filename": "call_recordings/MZd4d830af4ec976605d2e22318afe0163/assistant_10_05_53.raw"
+  },
+  {
+    "role": "user",
+    "start_time": "2025-02-23T10:05:53.190468",
+    "filename": "call_recordings/MZd4d830af4ec976605d2e22318afe0163/user_10_05_53.raw"
+  },
+  {
+    "role": "assistant",
+    "start_time": "2025-02-23T10:05:53.256220",
+    "filename": "call_recordings/MZd4d830af4ec976605d2e22318afe0163/assistant_10_05_53.raw"
+  },
+  {
+    "role": "user",
+    "start_time": "2025-02-23T10:05:53.267224",
+    "filename": "call_recordings/MZd4d830af4ec976605d2e22318afe0163/user_10_05_53.raw"
+  },
+  {
+    "role": "assistant",
+    "start_time": "2025-02-23T10:05:53.432064",
+    "filename": "call_recordings/MZd4d830af4ec976605d2e22318afe0163/assistant_10_05_53.raw"
+  },
+  {
+    "role": "user",
+    "start_time": "2025-02-23T10:05:53.449243",
+    "filename": "call_recordings/MZd4d830af4ec976605d2e22318afe0163/user_10_05_53.raw"
+  },
+  {
+    "role": "assistant",
+    "start_time": "2025-02-23T10:05:53.588563",
+    "filename": "call_recordings/MZd4d830af4ec976605d2e22318afe0163/assistant_10_05_53.raw"
+  },
+  {
+    "role": "user",
+    "start_time": "2025-02-23T10:05:53.590603",
+    "filename": "call_recordings/MZd4d830af4ec976605d2e22318afe0163/user_10_05_53.raw"
+  },
+  {
+    "role": "assistant",
+    "start_time": "2025-02-23T10:05:53.728844",
+    "filename": "call_recordings/MZd4d830af4ec976605d2e22318afe0163/assistant_10_05_53.raw"
+  },
+  {
+    "role": "user",
+    "start_time": "2025-02-23T10:05:53.748135",
+    "filename": "call_recordings/MZd4d830af4ec976605d2e22318afe0163/user_10_05_53.raw"
+  },
+  {
+    "role": "assistant",
+    "start_time": "2025-02-23T10:05:53.775971",
+    "filename": "call_recordings/MZd4d830af4ec976605d2e22318afe0163/assistant_10_05_53.raw"
+  },
+  {
+    "role": "user",
+    "start_time": "2025-02-23T10:05:53.786585",
+    "filename": "call_recordings/MZd4d830af4ec976605d2e22318afe0163/user_10_05_53.raw"
+  }
+]
