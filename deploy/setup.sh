@@ -1,14 +1,23 @@
 #!/bin/bash
 
 # Update system
-sudo apt-get update
-sudo apt-get upgrade -y
+sudo dnf update -y
+
+# Enable EPEL repository
+sudo dnf install -y epel-release
 
 # Install Python and dependencies
-sudo apt-get install -y python3-pip python3-dev nginx postgresql postgresql-contrib
+sudo dnf install -y python3-pip python3-devel nginx postgresql postgresql-server postgresql-contrib
 
 # Install system dependencies
-sudo apt-get install -y build-essential libssl-dev libffi-dev
+sudo dnf install -y gcc openssl-devel bzip2-devel libffi-devel
+
+# Initialize PostgreSQL
+sudo postgresql-setup --initdb
+
+# Start and enable PostgreSQL
+sudo systemctl start postgresql
+sudo systemctl enable postgresql
 
 # Create a PostgreSQL database and user
 sudo -u postgres psql << EOF
@@ -19,10 +28,10 @@ GRANT ALL PRIVILEGES ON DATABASE speech_assistant TO speech_user;
 EOF
 
 # Install Python packages
-pip3 install -r requirements.txt
+pip3 install --user -r requirements.txt
 
 # Setup Nginx
-sudo bash -c 'cat > /etc/nginx/sites-available/speech-assistant << EOF
+sudo bash -c 'cat > /etc/nginx/conf.d/speech-assistant.conf << EOF
 server {
     listen 80;
     server_name your_domain.com;
@@ -38,10 +47,9 @@ server {
 }
 EOF'
 
-# Enable the Nginx site
-sudo ln -s /etc/nginx/sites-available/speech-assistant /etc/nginx/sites-enabled/
-sudo rm /etc/nginx/sites-enabled/default
-sudo systemctl restart nginx
+# Start and enable Nginx
+sudo systemctl start nginx
+sudo systemctl enable nginx
 
 # Setup systemd service
 sudo bash -c 'cat > /etc/systemd/system/speech-assistant.service << EOF
@@ -50,16 +58,29 @@ Description=Speech Assistant API
 After=network.target
 
 [Service]
-User=ubuntu
-WorkingDirectory=/home/ubuntu/speech-assistant
-Environment="PATH=/home/ubuntu/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
-ExecStart=/home/ubuntu/.local/bin/uvicorn main:app --host 0.0.0.0 --port 5050
+User=ec2-user
+WorkingDirectory=/home/ec2-user/speech-assistant
+Environment="PATH=/home/ec2-user/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+ExecStart=/home/ec2-user/.local/bin/uvicorn main:app --host 0.0.0.0 --port 5050
 Restart=always
 
 [Install]
 WantedBy=multi-user.target
 EOF'
 
+# Reload systemd
+sudo systemctl daemon-reload
+
 # Start and enable the service
 sudo systemctl start speech-assistant
-sudo systemctl enable speech-assistant 
+sudo systemctl enable speech-assistant
+
+# Configure PostgreSQL to accept connections
+sudo sed -i "s/#listen_addresses = 'localhost'/listen_addresses = '*'/" /var/lib/pgsql/data/postgresql.conf
+sudo sed -i "s/#port = 5432/port = 5432/" /var/lib/pgsql/data/postgresql.conf
+
+# Add this line to pg_hba.conf for local access
+echo "host    all             all             127.0.0.1/32            md5" | sudo tee -a /var/lib/pgsql/data/pg_hba.conf
+
+# Restart PostgreSQL to apply changes
+sudo systemctl restart postgresql 
