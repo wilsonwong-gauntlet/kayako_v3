@@ -12,6 +12,7 @@ from src.api.kayako.client import KayakoAPIClient
 from src.api.kayako.interfaces import Ticket
 from datetime import datetime
 from src.kb.search import KBSearchEngine
+import re
 
 load_dotenv()
 
@@ -19,12 +20,35 @@ load_dotenv()
 OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
 PORT = int(os.getenv('PORT', 5050))
 SYSTEM_MESSAGE = (
-    "You are a helpful and bubbly AI assistant who specializes in providing information about AdvocateHub, "
-    "a customer support and community platform. For ANY questions about AdvocateHub features, administration, "
-    "or configuration, you MUST use the search_knowledge_base function to find accurate information. "
-    "Do not make up information about AdvocateHub - if you don't find relevant information in the knowledge base, "
-    "say so. You have a penchant for dad jokes, owl jokes, and rickrolling – subtly. "
-    "Always stay positive, but work in a joke when appropriate."
+    "You are an AI voice assistant for Kayako's AdvocateHub support system. Your primary role is to help customers "
+    "by providing accurate information from our knowledge base and ensuring proper ticket creation for follow-up. "
+    "\n\n"
+    "CORE RESPONSIBILITIES:\n"
+    "1. Always search the knowledge base using search_knowledge_base function for ANY questions about AdvocateHub.\n"
+    "2. If a clear answer is found in the knowledge base, provide it to the user.\n"
+    "3. If no answer is found, inform the user that a support expert will follow up and end the conversation professionally.\n"
+    "\n"
+    "CONVERSATION FLOW:\n"
+    "1. Start with a warm greeting and immediately ask for their email address for follow-up purposes.\n"
+    "2. Once you have their email (or after 3 attempts), ask about their reason for calling.\n"
+    "3. When they explain their issue, use set_reason_for_calling to save a clear summary.\n"
+    "4. Search the knowledge base for relevant information.\n"
+    "5. Either provide the answer or inform them that an expert will follow up.\n"
+    "\n"
+    "EMAIL COLLECTION:\n"
+    "- Ask: 'Before we dive in, could you please share your email address for follow-up purposes?'\n"
+    "- You can understand formats like 'user at gmail dot com'\n"
+    "- If unclear, say: 'I apologize, but I didn't catch a valid email address. Could you please provide it in a format like username@domain.com?'\n"
+    "- After 3 failed attempts, proceed with their request\n"
+    "\n"
+    "COMMUNICATION STYLE:\n"
+    "- Maintain a professional yet friendly tone\n"
+    "- Be clear and concise\n"
+    "- Show empathy and understanding\n"
+    "- Stay positive and solution-focused\n"
+    "\n"
+    "Remember: Your goal is to either resolve the issue immediately with knowledge base information or ensure "
+    "a smooth handoff to the support team."
 )
 VOICE = 'alloy'
 LOG_EVENT_TYPES = [
@@ -50,6 +74,36 @@ TOOLS = [
                 }
             },
             "required": ["query"]
+        }
+    },
+    {
+        "type": "function",
+        "name": "save_user_email",
+        "description": "Save the user's email address when they provide it.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string",
+                    "description": "The email address provided by the user."
+                }
+            },
+            "required": ["email"]
+        }
+    },
+    {
+        "type": "function",
+        "name": "set_reason_for_calling",
+        "description": "Set the user's reason for calling once they've clearly stated their issue.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "reason": {
+                    "type": "string",
+                    "description": "A clear, concise summary of why the user is calling."
+                }
+            },
+            "required": ["reason"]
         }
     }
 ]
@@ -101,6 +155,8 @@ async def handle_media_stream(websocket: WebSocket):
             self.current_assistant_response = []
             self.call_start_time = datetime.now()
             self.current_user_message = []
+            self.user_email = None
+            self.reason_for_calling = None
             print("Initializing new conversation state")
             
         def add_user_message(self, text):
@@ -112,44 +168,63 @@ async def handle_media_stream(websocket: WebSocket):
             if text.strip():
                 self.transcript.append({"role": "assistant", "content": text, "timestamp": datetime.now()})
                 print(f"Added assistant message to transcript. Total messages: {len(self.transcript)}")
-        
+
+        def get_conversation_summary(self) -> dict:
+            """Get the current state of the conversation."""
+            return {
+                "email": self.user_email,
+                "reason": self.reason_for_calling or "Not clearly stated"
+            }
+
         def get_formatted_transcript(self):
-            # Prepare ticket content with metadata
+            """Format transcript with HTML styling focused on key support information."""
             lines = []
             
-            # Add metadata header with HTML formatting
-            call_duration = (datetime.now() - self.call_start_time).total_seconds()
+            # Add customer information section
             lines.extend([
-                "<h2>Call Information</h2>",
+                "<h2>Customer Information</h2>",
                 "<hr/>",
-                f"<p><strong>Duration:</strong> {call_duration:.2f} seconds</p>",
-                f"<p><strong>Start Time:</strong> {self.call_start_time}</p>",
-                f"<p><strong>End Time:</strong> {datetime.now()}</p>",
-                f"<p><strong>Total Messages:</strong> {len(self.transcript)}</p>",
+                f"<p><strong>Email:</strong> {self.user_email or 'Not provided'}</p>",
                 "",
-                "<h2>Conversation Transcript</h2>",
+                "<h2>Support Request Details</h2>",
                 "<hr/>",
-                "<div class='transcript'>"
+            ])
+
+            # Add reason for calling if available
+            if self.reason_for_calling:
+                lines.append(f"<p><strong>Reason for Call:</strong> {self.reason_for_calling}</p>")
+            
+            # Add conversation transcript with clear formatting
+            lines.extend([
+                "",
+                "<h2>Conversation History</h2>",
+                "<hr/>",
+                "<div class='transcript' style='margin-left: 20px;'>"
             ])
             
-            # Add conversation messages with HTML formatting
+            # Add conversation messages with improved styling
             for msg in self.transcript:
-                timestamp = msg["timestamp"].strftime("%Y-%m-%d %H:%M:%S")
-                role_style = "color: #2962FF" if msg["role"] == "assistant" else "color: #424242"
+                timestamp = msg["timestamp"].strftime("%H:%M:%S")  # Simplified timestamp
+                if msg["role"] == "assistant":
+                    style = "color: #2962FF; margin-bottom: 15px;"
+                    prefix = "AI Assistant"
+                else:
+                    style = "color: #424242; margin-bottom: 15px;"
+                    prefix = "Customer"
+                
                 lines.append(
-                    f"<p style='{role_style}'>"
-                    f"<strong>[{timestamp}] {msg['role'].title()}:</strong><br/>"
+                    f"<p style='{style}'>"
+                    f"<strong>[{timestamp}] {prefix}:</strong><br/>"
                     f"{msg['content']}"
                     f"</p>"
                 )
             
             lines.append("</div>")  # Close transcript div
             
-            print(f"Generating transcript with {len(self.transcript)} messages")
             return "\n".join(lines)
 
         def debug_print_transcript(self):
-            """For console output, use plain text formatting"""
+            """Print transcript to console for debugging."""
             print("\n=== Current Transcript State ===")
             print(f"Total messages: {len(self.transcript)}")
             
@@ -161,6 +236,7 @@ async def handle_media_stream(websocket: WebSocket):
             print(f"Start Time: {self.call_start_time}")
             print(f"End Time: {datetime.now()}")
             print(f"Total Messages: {len(self.transcript)}")
+            print(f"User Email: {self.user_email or 'Not provided'}")
             
             # Print messages
             print("\nConversation Transcript")
@@ -212,10 +288,8 @@ async def handle_media_stream(websocket: WebSocket):
                         if mark_queue:
                             mark_queue.pop(0)
                     elif data['event'] == 'stop':
-                        # Print final transcript state before creating ticket
-                        print("\n=== Final Conversation State ===")
-                        conversation.debug_print_transcript()
-                        print("================================\n")
+                        # Analyze transcript for email and reason
+                        analysis = conversation.get_conversation_summary()
                         
                         # Calculate call duration
                         call_duration = (datetime.now() - conversation.call_start_time).total_seconds()
@@ -229,12 +303,16 @@ async def handle_media_stream(websocket: WebSocket):
                             f"Call Start Time: {conversation.call_start_time}\n"
                             f"Call End Time: {datetime.now()}\n"
                             f"Stream SID: {stream_sid}\n"
-                            f"Total Messages: {len(conversation.transcript)}\n\n"
+                            f"Total Messages: {len(conversation.transcript)}\n"
+                            f"User Email: {analysis['email'] or 'Not provided'}\n\n"
+                            f"Reason for Call: {analysis['reason']}\n\n"
                             f"Conversation Transcript\n"
                             f"====================\n\n"
                             f"{transcript_text}\n"  # Add newline after transcript
                         )
                         
+                        
+                    
                         ticket = Ticket(
                             subject=f'AI Call Assistant Conversation - {conversation.call_start_time.strftime("%Y-%m-%d %H:%M:%S")}',
                             contents=ticket_content,
@@ -293,6 +371,89 @@ async def handle_media_stream(websocket: WebSocket):
                     elif response.get('type') == 'response.done':
                         # Get the complete response from the output transcript
                         if 'response' in response and 'output' in response['response']:
+                            # First handle any function calls
+                            for output_item in response['response']['output']:
+                                if output_item.get('type') == 'function_call':
+                                    print(f"Function call detected: {output_item.get('name')}")
+                                    
+                                    # Parse arguments first
+                                    try:
+                                        arguments = json.loads(output_item['arguments'])
+                                    except Exception as e:
+                                        print(f"Error parsing function arguments: {e}")
+                                        continue
+                                    
+                                    try:
+                                        # Handle search_knowledge_base function
+                                        if output_item['name'] == 'search_knowledge_base':
+                                            # Initialize KB search if not done yet
+                                            if not kb_search_engine.initialized:
+                                                print("Initializing KB search engine...")
+                                                await kb_search_engine.initialize()
+                                            
+                                            print("Searching knowledge base...")
+                                            summary = await kb_search_engine.search_and_summarize(arguments["query"])
+                                            print(f"Search result: {summary}")
+                                            
+                                            function_output = {
+                                                "type": "conversation.item.create",
+                                                "item": {
+                                                    "type": "function_call_output",
+                                                    "call_id": output_item['call_id'],
+                                                    "output": json.dumps({"result": summary if summary else "No relevant information found in the AdvocateHub knowledge base."})
+                                                }
+                                            }
+                                            await openai_ws.send(json.dumps(function_output))
+                                            
+                                        elif output_item['name'] == 'save_user_email':
+                                            email = arguments.get("email")
+                                            if email:
+                                                conversation.user_email = email
+                                                print(f"Saved user email: {email}")
+                                                
+                                            function_output = {
+                                                "type": "conversation.item.create",
+                                                "item": {
+                                                    "type": "function_call_output",
+                                                    "call_id": output_item['call_id'],
+                                                    "output": json.dumps({"result": "Email saved successfully."})
+                                                }
+                                            }
+                                            await openai_ws.send(json.dumps(function_output))
+                                            
+                                        elif output_item['name'] == 'set_reason_for_calling':
+                                            reason = arguments.get("reason")
+                                            if reason:
+                                                conversation.reason_for_calling = reason
+                                                print(f"Saved reason for calling: {reason}")
+                                                
+                                            function_output = {
+                                                "type": "conversation.item.create",
+                                                "item": {
+                                                    "type": "function_call_output",
+                                                    "call_id": output_item['call_id'],
+                                                    "output": json.dumps({"result": "Reason for calling saved successfully."})
+                                                }
+                                            }
+                                            await openai_ws.send(json.dumps(function_output))
+                                            
+                                        # Generate a new response after handling any function
+                                        await openai_ws.send(json.dumps({"type": "response.create"}))
+                                        
+                                    except Exception as e:
+                                        print(f"Error handling function call: {e}")
+                                        error_output = {
+                                            "type": "conversation.item.create",
+                                            "item": {
+                                                "type": "function_call_output",
+                                                "call_id": output_item['call_id'],
+                                                "output": json.dumps({"error": str(e)})
+                                            }
+                                        }
+                                        await openai_ws.send(json.dumps(error_output))
+                                        await openai_ws.send(json.dumps({"type": "response.create"}))
+                            
+                            # Then handle any assistant messages
                             for output_item in response['response']['output']:
                                 if output_item.get('role') == 'assistant' and output_item.get('content'):
                                     for content in output_item['content']:
@@ -334,40 +495,6 @@ async def handle_media_stream(websocket: WebSocket):
                             print(f"Interrupting response with id: {last_assistant_item}")
                             await handle_speech_started_event()
 
-                    # Handle function calls
-                    if response.get('type') == 'response.done':
-                        if 'response' in response and 'output' in response['response']:
-                            print("Checking for function calls in response output...")
-                            for output_item in response['response']['output']:
-                                if output_item.get('type') == 'function_call':
-                                    print(f"Function call detected: {output_item.get('name')}")
-                                    
-                                    # Handle search_knowledge_base function
-                                    if output_item['name'] == 'search_knowledge_base':
-                                        # Initialize KB search if not done yet
-                                        if not kb_search_engine.initialized:
-                                            print("Initializing KB search engine...")
-                                            await kb_search_engine.initialize()
-                                        
-                                        # Parse arguments and search
-                                        arguments = json.loads(output_item['arguments'])
-                                        print("Searching knowledge base...")
-                                        summary = await kb_search_engine.search_and_summarize(arguments["query"])
-                                        print(f"Search result: {summary}")
-                                        
-                                        # Create function output item
-                                        function_output = {
-                                            "type": "conversation.item.create",
-                                            "item": {
-                                                "type": "function_call_output",
-                                                "call_id": output_item['call_id'],
-                                                "output": json.dumps({"result": summary if summary else "No relevant information found in the AdvocateHub knowledge base."})
-                                            }
-                                        }
-                                        await openai_ws.send(json.dumps(function_output))
-                                        
-                                        # Generate a new response
-                                        await openai_ws.send(json.dumps({"type": "response.create"}))
             except Exception as e:
                 print(f"Error in send_to_twilio: {e}")
 
@@ -410,47 +537,6 @@ async def handle_media_stream(websocket: WebSocket):
                 }
                 await connection.send_json(mark_event)
                 mark_queue.append('responsePart')
-
-        async def handle_function_call(openai_ws, function_name: str, arguments: dict, call_id: str):
-            """Handle function calls from the model."""
-            try:
-                print(f"Handling function call: {function_name} with arguments: {arguments}")
-                if function_name == "search_knowledge_base":
-                    # Initialize KB search if not done yet
-                    if not kb_search_engine.initialized:
-                        print("Initializing KB search engine...")
-                        await kb_search_engine.initialize()
-                    
-                    print("Searching knowledge base...")
-                    # Search and get summary
-                    summary = await kb_search_engine.search_and_summarize(arguments["query"])
-                    print(f"Search result: {summary}")
-                    
-                    # Create response for the model
-                    function_output = {
-                        "type": "conversation.item.create",
-                        "item": {
-                            "type": "function_call_output",
-                            "call_id": call_id,
-                            "output": json.dumps({"result": summary if summary else "No relevant information found in the AdvocateHub knowledge base."})
-                        }
-                    }
-                    await openai_ws.send(json.dumps(function_output))
-                    
-                    # Generate a new response
-                    await openai_ws.send(json.dumps({"type": "response.create"}))
-            except Exception as e:
-                print(f"Error handling function call: {e}")
-                error_output = {
-                    "type": "conversation.item.create",
-                    "item": {
-                        "type": "function_call_output",
-                        "call_id": call_id,
-                        "output": json.dumps({"error": f"Error searching AdvocateHub knowledge base: {str(e)}"})
-                    }
-                }
-                await openai_ws.send(json.dumps(error_output))
-                await openai_ws.send(json.dumps({"type": "response.create"}))
 
         await asyncio.gather(receive_from_twilio(), send_to_twilio())
 

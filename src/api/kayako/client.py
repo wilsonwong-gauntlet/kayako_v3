@@ -215,22 +215,7 @@ class KayakoAPIClient(KayakoAPI):
             return final_articles
     
     def _format_ticket_content(self, content: str, classification: Optional[Dict] = None) -> str:
-        """Format ticket content to ensure proper HTML structure and include classification details."""
-        # Create classification summary if available
-        classification_html = ""
-        if classification:
-            classification_html = f"""
-            <div style="background-color: #f5f5f5; padding: 15px; margin-bottom: 20px; border-left: 5px solid #2962FF;">
-                <h3 style="margin-top: 0;">Ticket Classification Details</h3>
-                <p><strong>Priority:</strong> {classification['priority']['name']} (ID: {classification['priority']['id']})<br>
-                   <strong>Priority Confidence:</strong> {classification['priority']['confidence']:.2f}</p>
-                <p><strong>Type:</strong> {classification['type']['name']} (ID: {classification['type']['id']})<br>
-                   <strong>Type Confidence:</strong> {classification['type']['confidence']:.2f}</p>
-                <p><strong>Matched Priority Patterns:</strong> {', '.join(classification.get('priority', {}).get('matched_patterns', []))}</p>
-                <p><strong>Matched Type Patterns:</strong> {', '.join(classification.get('type', {}).get('matched_patterns', []))}</p>
-            </div>
-            """
-
+        """Format ticket content to ensure proper HTML structure."""
         # Ensure content has proper HTML structure
         if not content.strip().startswith('<!DOCTYPE html>'):
             content = f"""<!DOCTYPE html>
@@ -246,7 +231,6 @@ class KayakoAPIClient(KayakoAPI):
     </style>
 </head>
 <body>
-{classification_html}
 {content}
 </body>
 </html>"""
